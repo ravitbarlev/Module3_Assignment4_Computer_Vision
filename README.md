@@ -1,2 +1,0 @@
-# Module3_Assignment4_Computer_Vision
-Module3_Assignment4_Computer_Vision
