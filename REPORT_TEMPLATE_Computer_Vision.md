@@ -42,7 +42,34 @@ Answer each in 2-5 sentences.
 ---
 
 ## 4. Model Card (lab-to-field)
-Paste the completed Model Card from the notebook here.
+CV_MODEL_CARD = """
+
+# Model Card · lab-to-field
+
+## 1. Overview
+- Option / dataset / classes: PlantVillage dataset, focusing on the "color" folder subset containing 38 distinct classes of plant species and specific crop diseases.
+- Backbone and what you froze vs fine-tuned: ResNet18 (pretrained on ImageNet). Initially, the entire feature extraction backbone was frozen (`requires_grad=False`), and a brand-new, untrained linear classifier (`model.fc`) was appended to match the 38 output classes. In the subsequent phase, the entire model was trained jointly with a low learning rate (`1e-4`).
+
+## 2. Performance (lab test set)
+- Overall accuracy: 88.21% (Achieved on the clean, stratified validation/test split at Epoch 3).
+- Worst classes (confusion matrix) and why: Rare diseases and structurally similar species (such as different types of fungal spots or molds on the same host plant, e.g., Tomato molds). They suffer from high inter-class similarity in visual textures, causing the model to misclassify them across adjacent rows in the confusion matrix.
+
+## 3. The reality check
+- Accuracy on real field images: 0% correct classification with critically low confidence scores ranging between 15.45% and 22.12%.
+- What specifically broke between lab and field? Extreme Domain Shift. The model suffered from a complete breakdown of feature generalization. In the lab, it relied on spurious correlations like the flat, gray background and pristine leaf silhouettes. In the field, it encountered complex "noise" including wild backgrounds (soil, weeds, equipment), overlapping foliage, harsh natural sunlight, dynamic shadows, and human hands holding the specimens.
+
+## 4. Limitations & ethics
+- Cost of a false 'healthy' vs a false 'diseased' in agriculture: 
+  - A false 'healthy' (False Negative) is catastrophic: a farmer misses a disease outbreak, leading to crop death, rapid field-wide spreading, and devastating financial or food-supply loss.
+  - A false 'diseased' (False Positive) leads to economic waste: unnecessary and expensive chemical spraying, environmental soil/water pollution, and forced destruction of perfectly viable crops.
+- Who could be harmed if this were deployed as-is? Smallholder farmers and agricultural communities who rely entirely on their seasonal yield. Relying on an uncertain model with ~18% confidence could ruin their livelihood due to mismanaged crop treatments.
+
+## 5. Real world
+- What data and steps would make this work in a farmer's hand?
+  1. **Data collection**: Source a diverse, "dirty" dataset captured in-the-wild, such as the PlantDoc dataset, featuring varying illumination, resolutions, and backgrounds.
+  2. **Augmentation Pipeline**: Implement aggressive training augmentations like `RandomResizedCrop`, `ColorJitter`, and synthetic background blending to force background-invariance.
+  3. **Operational Thresholding**: Hardcode a deployment guardrail that rejects any classification with a confidence score under 75%, instructing the farmer to take a clearer, closer photo instead of providing a random guess.
+"""
 
 ```
 (Model Card)
