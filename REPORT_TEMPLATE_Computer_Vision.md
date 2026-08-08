@@ -1,7 +1,7 @@
 # REPORT — Module 3 · Assignment 4 · Computer Vision
 
-**Name:** ___  **ID:** ___  **Date:** ___
-**Chosen option:** ___ (A · PlantVillage / B · Oxford Flowers-102 / C · PlantVillage -> PlantDoc)
+**Name:**Ravit Bar-Lev  **ID:**029290400  **Date:** 08/08/26
+**Chosen option:** (A · PlantVillage
 
 > Keep this report in English. 99% on lab images proves nothing about a field photo.
 > The reality check is the heart of this assignment.
@@ -9,10 +9,13 @@
 ---
 
 ## 1. Framing
-Business question and metric:
+Business question and metric: Early Identification of infected leaves / Plant Diseases for Farmers
 
 Why transfer learning rather than training from scratch:
-
+1. Save time and Resources
+2. Consume less data
+3. High Accuracy
+   
 ---
 
 ## 2. Results
