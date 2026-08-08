@@ -21,9 +21,9 @@ Why transfer learning rather than training from scratch:
 ## 2. Results
 | Split | Accuracy | Notes |
 |---|---|---|
-| lab test set (overall) | | |
-| worst classes | | |
-| real-world / field images | | |
+| lab test set (overall) |88.21% |excellent performance on lab data |
+| worst classes |significantly low | Rare diseases demonstrate low recall percentage|
+| real-world / field images |0% | Total collapse|
 
 ---
 
@@ -31,21 +31,42 @@ Why transfer learning rather than training from scratch:
 Answer each in 2-5 sentences.
 
 1. **Why transfer learning.** Why not train from scratch? What does the pretrained backbone give you?
+   Refer to clause #1 
 2. **Per-class.** Which classes does it confuse, and why (visual similarity, class imbalance)?
+BOTH!! In the confusion matrix, many other completely unrelated classes are getting mistargeted into these specific folders
 3. **Lab-to-field.** Run it on real-world images. What happened, and why? (This is the core of the assignment.)
+The steep drop in confidence and prediction accuracy is a textbook case of Domain Shift (Data Distribution Mismatch) between
+the training environment and reality:
+   -The "Lab Versus Wild" Effect: The PlantVillage dataset consists exclusively of clean, isolated single leaves shot against
+   an artificially uniform, flat, and neutral background. In contrast, the real-world field images contain complex,
+   uncontrolled noisy elements.
+   -Spurious Correlations: During training, the convolutional layers likely latched onto shortcut features such as the sharp,
+    clean edges of the isolated leaves or the specific contrast ratios against the gray studio background.
+   -Illumination and Shadow Artifacts: Real-world conditions introduce harsh natural sunlight, dynamic range issues, and deep
+   shadows. 
 4. **Augmentation.** Which augmentations did you use, and did they help generalization? Show numbers.
+   The pipeline utilized a specific combination of geometric and color-space transformations during
+   training:transforms. Resize((224,224)): Standardizes input dimensions. transforms. RandomHorizontalFlip(): Mirror-images the
+   leaves. transforms. RandomRotation(15): Tilts the leaf position slightly. transforms. ColorJitter(0.2, 0.2, 0.2): Shifts
+   brightness, contrast, and saturation by up to 20%.
 5. **Overfitting.** Learning curves — is the model memorizing the clean lab background?
+   Yes, the model is absolutely memorizing the clean lab background. 
 6. **The gap.** What specifically differs between lab and field images that breaks the model?
+   The model breaks because of a phenomenon called Domain Shift (or Covariate Shift). A convolutional neural network (CNN)
+   like ResNet18 learns by finding the easiest mathematical patterns (shortcuts) that help it minimize loss during training.
 7. **Real world.** What data and steps would you need to make this work in a farmer's hand?
+   To transition this model from a "lab" into a reliable tool that works in a farmer's hand, I must fundamentally change the
+   model’s data and its training environment (the workflow). The goal is to force the neural network to develop background-
+   invariance and illumination-robustness.
+   I would also replace the PlantVillage data with a distribution that mirrors actual field
 8. **Cost of error.** In agriculture, what is the cost of a false "healthy" vs a false "diseased"? How should the threshold reflect that?
-
+In agriculture, the costs of these two types of statistical errors are highly asymmetric. A false "healthy" is almost always far more damaging than a false "diseased".
+A false "healthy" occurs when the model tells a farmer a plant is fine, but it is actually infected.
+A false "diseased" occurs when the model flags a completely healthy plant as sick.
 ---
 
 ## 4. Model Card (lab-to-field)
 CV_MODEL_CARD = """
-
-# Model Card · lab-to-field
-
 ## 1. Overview
 - Option / dataset / classes: PlantVillage dataset, focusing on the "color" folder subset containing 38 distinct classes of plant species and specific crop diseases.
 - Backbone and what you froze vs fine-tuned: ResNet18 (pretrained on ImageNet). Initially, the entire feature extraction backbone was frozen (`requires_grad=False`), and a brand-new, untrained linear classifier (`model.fc`) was appended to match the 38 output classes. In the subsequent phase, the entire model was trained jointly with a low learning rate (`1e-4`).
